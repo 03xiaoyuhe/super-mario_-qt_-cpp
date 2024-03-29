@@ -3,7 +3,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QTimer>
-#include <QSound>
+#include <QSoundeffect>
 
 #include "Mario.h"
 #include "LevelManager.h"

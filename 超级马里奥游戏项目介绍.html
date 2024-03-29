@@ -1,0 +1,343 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>超级马里奥游戏项目介绍</title>
+</head>
+<body><h1 id='超级马里奥游戏项目介绍'>超级马里奥游戏项目介绍</h1>
+<div>[TOC]</div>
+<h2 id='概述'>概述</h2>
+<h3 id='游戏进程概述'>游戏进程概述</h3>
+<ul>
+<li>开始游戏界面</li>
+
+</ul>
+<ul>
+<li>用户按下&quot;S&quot;键，即可开始游戏；</li>
+
+</ul>
+<ul>
+<li><p>游戏操作说明</p>
+<ul>
+<li>用户使用方向键控制mario移动，空格跳跃，“B”键可发出火球攻击；</li>
+
+</ul>
+</li>
+
+</ul>
+<ul>
+<li><p>游戏过程</p>
+<ul>
+<li>用火球攻击敌人或者正中踩中敌人，即可消灭敌人，否则产生其它碰撞mario会受伤或者死亡；从正下方撞击道具箱即可出现道具；</li>
+
+</ul>
+</li>
+
+</ul>
+<ul>
+<li><p>结束游戏</p>
+<ul>
+<li>mario死亡，结束游戏；</li>
+
+</ul>
+</li>
+
+</ul>
+<ul>
+<li><p>通关游戏</p>
+<ul>
+<li>当用户成功通关，进入下一关。</li>
+
+</ul>
+</li>
+
+</ul>
+<h3 id='环境'>环境</h3>
+<p><big>QT(Assitant 6.24-MinGW 11.2.0 64-bit)</big></p>
+<p><big>Visual Studio 2022</big></p>
+<h3 id='类名及属性概述'>类名及属性概述</h3>
+<h4 id='类-概述'>类-概述</h4>
+<ul>
+<li><p>Terrain 地形土地块</p>
+</li>
+<li><p>Block 墙砖</p>
+</li>
+<li><p>Fireball 火球</p>
+</li>
+<li><p>Mario 马里奥</p>
+</li>
+<li><p>Pipe 管道</p>
+</li>
+<li><p>Enemy 敌人</p>
+<ul>
+<li>Goomba 蘑菇敌人（贡巴）</li>
+<li>Turtle 乌龟敌人</li>
+
+</ul>
+</li>
+<li><p>Box 道具箱</p>
+</li>
+<li><p>Flower 花</p>
+</li>
+<li><p>RedMushroom 红蘑菇</p>
+</li>
+<li><p>GreenMushroom 绿蘑菇</p>
+</li>
+
+</ul>
+<h4 id='属性概述'>属性概述</h4>
+<ul>
+<li>walkable 【属性】是否可走</li>
+
+</ul>
+<ul>
+<li>colidable 【属性】是否可碰撞</li>
+
+</ul>
+<ul>
+<li>moving_speed 【属性】移动速度</li>
+
+</ul>
+<h2 id='设计思路'>设计思路</h2>
+<h3 id='对象设计'>对象设计</h3>
+<h4 id='mario用例'>Mario用例<img src="file:///C:\Users\Administrator\AppData\Local\Temp\ksohtml1036\wps2.jpg" referrerpolicy="no-referrer" alt="img" style="float: right; zoom: 70%;"></h4>
+<ul>
+<li><p>攻击碰撞敌人   </p>
+</li>
+<li><p>获取道具   </p>
+</li>
+<li><p>触发地形机关</p>
+</li>
+<li><p>对体系结构重要的用例 </p>
+<ul>
+<li>攻击敌人<br>	简短描述：此用例不是马里奥死就是敌人亡。此用例的参与者为：mario、继承enemy类的敌人实例。</li>
+
+</ul>
+<ul>
+<li>获取道具<br>    简短描述：此用例改变马里奥的状态，（如生命值、大小形态、是否能喷火球）。此用例的参与者为：mario、藏在box里面的道具类实例（Flower【花-----吃了能喷火】、mushoroom 【红蘑菇----Mario变大、、、绿蘑菇---Mario生命值加一】、coin【金币】）。</li>
+<li>地形建筑<br>	简短描述：此用例让mario在特定的背景建筑的碰撞下能够产生特定机关效果。此用例的参与者为：Mario、地形。</li>
+
+</ul>
+</li>
+
+</ul>
+<h3 id='对象交互部分'>对象交互部分</h3>
+<p>利用状态机模型，将游戏中的可交互对象抽象为拥有不同属性以及不同状态的状态机。在对象与对象产生交互的过程中，即是通过调用状态转换函数将各对象的状态切换，从而完成交互的过程。</p>
+<h3 id='游戏画面显示'>游戏画面显示</h3>
+<p>通过QT内置类QGraphicsPixmapItem(被游戏对象大类Object集成)像素图加载类，其中集成了图层加载，抗锯齿，动态模糊，碰撞箱，碰撞检测等功能)中的animate()(像素图刷新)方法，通过游戏运行过程中动态维护的各对象状态加载图层，如下提供了Mario 类的animate()方法：</p>
+<pre><code class='language-c++' lang='c++'>void Mario::animate()
+{
+	// handle bouncing 处理强壮状态
+	if(jumping == false &amp;&amp; bouncing){...}
+
+	// handle phantom mode 处理幽灵状态
+	if(phantom){...}
+
+	// handle transformation 处理转换过程
+    //(在吃了强化蘑菇后，会进入由正常状态到强壮状态转化的过程)
+	if(transforming){...}
+
+	// set proper texture 刷新转化动画
+	if(transforming){...}
+	else if(dying || dead)
+		setPixmap(texture_dead);
+	else if(moving &amp;&amp; !jumping &amp;&amp; !falling)
+		setPixmap(texture_walk[big][(walk_counter++/(running ? running_div : walk_div))%3]);
+	else if(jumping || falling)
+		setPixmap(texture_jump[big]);
+	else
+		setPixmap(texture_stand[big]);
+
+ /// 状态刷新
+ ///////////////////////////////////////////////
+ //检查是否通关
+ if(successing){...}
+
+ //检查是否为下落状态
+ if(falling){...}
+
+ //检查是否为进入管道状态
+ if(piping1 &amp;&amp; piping){...}
+
+	//处理下落过程
+ if(piping2 == true){...}
+ /////////////////////////////////////////////////
+
+	// mirror the texture along the horizontal axis if needed
+ //镜像，坐标对称
+	if(dir == LEFT)
+		setPixmap(pixmap().transformed(QTransform().scale(-1,1)));
+}
+</code></pre>
+<blockquote><p>在本例中，animate()方法通过检查每一个可能的状态，然后加载画面</p>
+</blockquote>
+<h3 id='游戏主窗口概述'>游戏主窗口概述</h3>
+<p><big>Game类</big></p>
+<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20231218132512610.png" referrerpolicy="no-referrer" alt="image-20231218132512610" style="float:left"></p>
+<p>继承于QGraphicsView相当于创建一个用于显示内容的窗口</p>
+<p>数据成员scene:继承于QGraphicsScene相当于在窗口中创建一个用于绘制各对象的画布</p>
+<p>方法：</p>
+<ul>
+<li><code>keyPressEvent()</code> 以及 <code>keyRelease()</code> 按键侦听：处理如按下/松开键盘左右键上下键以及空格等键盘事件</li>
+
+</ul>
+<ul>
+<li><code>wheelEvevnt()</code> 鼠标滚轮事件，在鼠标滚轮滚动时会放大/缩小屏幕。</li>
+<li>以及 <code>reset()</code>重置游戏 <code>start()</code>开始游戏 <code>gameover()</code>游戏结束 togglePause()游戏暂停 等方法</li>
+
+</ul>
+<h3 id='游戏主窗口细节说明'>游戏主窗口细节说明</h3>
+<p>沿用上述状态机的概念，采用枚举方式列出了游戏的状态(<code>enum game_state{READY, RUNNING, PAUSE, GAME_OVER};</code>分别是重置、运行、暂停、游戏结束四个状态)，然后通过  <code>advance()</code>方法根据游戏所处状态进行游戏画面刷新。</p>
+<p>同时调用所有位于画布上的对像进行各部分的状态刷新</p>
+<pre><code class='language-c++' lang='c++'>void Game::advance()
+{
+	// do nothing if game is not running 如果游戏未开始不做任何处理
+	if(cur_state != RUNNING)
+		return;
+
+	// if mario is dead, game over 如果马里奥处于死亡状态，则游戏结束
+	if(mario-&gt;isDead())
+		gameover();
+
+	// if mario is dying or transforming, animate/advance only him 
+	// (the rest of the world is freezed)  `the rest of-剩下的部分`
+    // 如果马里奥处于正在死亡状态或者转化状态则只刷新 马里奥的状态
+    // 其他对象会被冻结
+	if(mario-&gt;isDying() || mario-&gt;isTransforming())
+	{	
+		mario-&gt;animate();
+		mario-&gt;advance();
+		return;
+	}
+	
+    //当马里奥进入管道时
+    if(mario-&gt;ispiped()){...}
+    
+	//当游戏成功时
+    ///////////////////////////////////////////
+    if(mario-&gt;isSuccess()){...}
+    ///////////////////////////////////////////
+	
+	// tell all game objects to animate and advance in the scene
+    // 访问画布上的所有对象调用他们的animate()以及advance()方法
+    for(auto &amp; item : scene-&gt;items())
+    {
+		Object* obj = dynamic_cast&lt;Object*&gt;(item);
+		if(obj)
+		{
+			obj-&gt;animate();
+			obj-&gt;advance();
+
+			// destroy died Entity objects
+            // 清除已经失效的对象
+			Entity* entity_obj = dynamic_cast&lt;Entity*&gt;(obj);
+			if(entity_obj &amp;&amp; entity_obj-&gt;isDead())
+			{
+				/*rintf(&quot;%s (%.0f,%.0f) destroyed\n&quot;, entity_obj-&gt;name().c_str(), entity_obj-&gt;pos().x(), entity_obj-&gt;pos().y());*/
+				scene-&gt;removeItem(entity_obj);
+				delete entity_obj;
+			}
+		}
+    }
+
+    // center view on Mario
+    // 将摄像头移动到与马里奥附近
+    centerOn(mario);
+}
+</code></pre>
+<h3 id='碰撞检测模块'>碰撞检测模块</h3>
+<p>先将游戏中所有对象分为可移动对象(<code>Entity</code>)以及不可移动对象(<code>Inert</code>)，考虑到只有移动对象会与其他对象发生碰撞，所以我们在所有可移动对象父类(<code>Entity</code>)中实例化了QT内置方法<code>solveCollisions()</code>碰撞处理，通过与其子类及不可移动对象子类的<code>hit()</code>方法有机结合，写出了碰撞检测逻辑。如下:</p>
+<pre><code class='language-c++' lang='c++'>void Entity::solveCollisions()
+{
+	// if the entity cannot collide or is 100% dead, we avoid
+	// solving possible collisions
+    // 解决bug 当对象处于死亡状态时没有能与之碰撞的物体
+	if(!collidable || dead)
+		return;
+
+    // get collisions
+    // 获取所有产生碰撞的对象
+    QList&lt;QGraphicsItem*&gt; colliding_items = collidingItems();
+
+	// will be set to true if we collide an impenetrable object
+    // 当碰到障碍物时会被设置为true
+	bool revert = false;	
+
+    // manage collisions
+    // 处理所有产生碰撞的对象
+    for(auto &amp; ci : colliding_items)
+    {
+		// convert to game object, and skip if conversion
+		// does not work (should never happen)
+        // 处理碰撞队列为空的情况
+		Object *obj = dynamic_cast&lt;Object*&gt;(ci);
+		if(!obj)
+			continue;
+
+		// ignore collision if obj is not collidable
+        // 忽略无法发生碰撞的物体
+		if( ! obj-&gt;isCollidable())
+			continue;
+
+		// ignore collisions if a phantom Entity is involved
+        // 忽略已经无效的怪物
+		Entity* entity_obj = dynamic_cast&lt;Entity*&gt;(obj);
+		if(entity_obj &amp;&amp; (entity_obj-&gt;isPhantom() || phantom))
+			continue;
+
+		// ignore collisions between Mario&#39;s collectables and Enemies
+        // bug处理 忽略玛丽奥的收集物以及敌人 (当马里奥和敌人发生碰撞时调用敌人的hit方法而非马里奥的)
+		if( (dynamic_cast&lt;Enemy*&gt;(obj) &amp;&amp; this-&gt;isCollectable()) ||
+			(entity_obj &amp;&amp; entity_obj-&gt;isCollectable() &amp;&amp; dynamic_cast&lt;Enemy*&gt;(this)))
+			continue;
+		
+        // get collision direction (获得收集物 当收集物与马里奥产生碰撞时)
+        Direction coll_dir = collisionDirection(obj);
+   
+		// if it is not possible to calculate it, we skip current collision
+        // (e.g. this may happen if we have solved the collision earlier)
+        // bug处理 处理一些无法收集的物品，
+        // 如我们已经将该收集物添加给马里奥但物品没消失的情况
+        // 直接跳过该收集物
+        if(!coll_dir)
+            continue;
+
+        // special case 1: touching a walkable object while falling
+        // ---&gt; end falling and set walkable object
+        // 特殊情况1 当掉落的状态下碰到可移动对象时
+        if(coll_dir == DOWN &amp;&amp; falling &amp;&amp; obj-&gt;isWalkable())
+        {
+            falling = false;
+            walkable_object = obj;
+        }
+
+        // special case 2: touching an object while jumping
+        // --&gt; end jumping
+        // 特殊情况二 处于跳跃过程碰到障碍物时：停止跳跃
+        if(coll_dir == UP &amp;&amp; jumping)
+            endJumping();
+
+        // the two objects hit each other
+        // 当两个对象发生碰撞时分别调用两者的hit()方法
+        obj-&gt;hit(this, inverse(coll_dir));
+		this-&gt;hit(obj, coll_dir);
+		
+        // if we ended up here, it means we have to revert
+		// to the previous position (impenetrable object)
+        // 如果在这里结束说明我们需要刷新该对象的状态了(已经发生了碰撞)
+		revert = true;
+    }
+
+	// revert to previous position if needed
+	if(revert)
+		setPos(prevPos);
+}
+</code></pre>
+<h3 id='整体类图'>整体类图</h3>
+<p><img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20231218164925737.png" referrerpolicy="no-referrer" alt="image-20231218164925737"></p>
+<h2 id='大小及性能'>大小及性能</h2>
+<p>● 游戏大小大约占用100MB</p>
+<p>● 系统运行占用CPU，系统内存少，运行流畅</p>
+<p>&nbsp;</p>
+</body>
+</html>
